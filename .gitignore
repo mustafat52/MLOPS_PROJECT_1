@@ -1,0 +1,4 @@
+project/
+mlruns/
+logs/
+MLOPS_PROJECT_ONE.egg-info/
