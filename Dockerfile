@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -e .
 
 # NOTE: This line runs your training pipeline *during* the build. 
 # Ensure this is intentional, as it saves the model inside the image.
-RUN python pipeline/training_pipleline.py
+RUN python pipeline/training_pipeline.py
 
 EXPOSE 5000
 
