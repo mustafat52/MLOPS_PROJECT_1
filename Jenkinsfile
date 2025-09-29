@@ -80,12 +80,12 @@ pipeline{
 
                         gcloud config set project ${GCP_PROJECT}
 
-                        gcloud run deploy mlops-project-first \ 
-                            --image=gcr.io/${GCP_PROJECT}/mlops-project-first:latest \
-                            --platform=managed \
-                            --region=us-central1 \
+                        gcloud run deploy mlops-project-first 
+                            --image=gcr.io/${GCP_PROJECT}/mlops-project-first:latest 
+                            --platform=managed 
+                            --region=us-central1 
                             
-                            --allow-unauthenticated \
+                            --allow-unauthenticated 
                             
 
                         ''' 
