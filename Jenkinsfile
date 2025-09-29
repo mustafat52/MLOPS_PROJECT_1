@@ -84,7 +84,8 @@ pipeline{
                             --image=gcr.io/${GCP_PROJECT}/mlops-project-first:latest \
                             --platform=managed \
                             --region=us-central1 \
-                            --allow=unauthenticated 
+                            
+                            --allow-unauthenticated \
                             
 
                         ''' 
