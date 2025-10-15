@@ -1,5 +1,5 @@
 import os
-import pandas
+# Removed unnecessary 'import pandas' - already imported as pd
 from src.logger import get_logger
 from src.custome_exception import CustomException
 import yaml
@@ -15,23 +15,23 @@ def read_yaml(file_path):
         
         with open(file_path,'r') as yaml_file:
             config = yaml.safe_load(yaml_file)
-            logger.info("Successfullt read form the YAML file")
+            logger.info("Successfully read form the YAML file")
             return config
         
 
     except Exception as e:
         logger.error("Error in reading the YAML file")
-        raise CustomException("Failed to read the YAML file",e)
+        # CORRECTED: Passing the original exception 'e' to CustomException
+        raise CustomException("Failed to read the YAML file", e)
         
-
 
 def load_data(path):
     try:
-        logger.info("Loading path")
+        logger.info(f"Attempting to load data from path: {path}")
         return pd.read_csv(path)
     
     except Exception as e:
-        logger.error(f"Failed to read the csv file {e}")
-        raise CustomException("Failed to load data")
-    
-    
+        logger.error(f"Failed to read the csv file at {path}. Details: {e}")
+        # CORRECTED: Passing the original exception 'e' to CustomException
+        # This fixes the TypeError in CustomException.__init__()
+        raise CustomException(f"Failed to load data from {path}", e)
