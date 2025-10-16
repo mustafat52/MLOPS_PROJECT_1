@@ -1,28 +1,31 @@
-# FROM python:3.10-slim
+FROM python:3.10-slim
 
-# # NOTE: Fixed typo PHTHONUNBUFFERED -> PYTHONUNBUFFERED
-# ENV PYTHONDONTWRITEBYTECODE = 1 \
-#     PYTHONUNBUFFERED = 1
+# NOTE: Fixed typo PHTHONUNBUFFERED -> PYTHONUNBUFFERED
+ENV PYTHONDONTWRITEBYTECODE = 1 \
+    PYTHONUNBUFFERED = 1
 
-# WORKDIR /app
+WORKDIR /app
 
-# # CORRECTED: apt-get commands are fixed
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     build-essential cmake git curl libgomp1 \
+# CORRECTED: apt-get commands are fixed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git curl libgomp1 \
 
-#     && apt-get clean \ 
-#     && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \ 
+    && rm -rf /var/lib/apt/lists/*
     
-# COPY . .
+COPY . .
 
-# RUN pip install --no-cache-dir -e . 
-# # NOTE: This line runs your training pipeline *during* the build. 
-# # Ensure this is intentional, as it saves the model inside the image.
-# RUN python pipeline/training_pipeline.py
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -e . 
+# NOTE: This line runs your training pipeline *during* the build. 
+# Ensure this is intentional, as it saves the model inside the image.
+RUN --mount=type=secret,id=gcp-credentials \
+    export GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp-credentials && \
+    python pipeline/training_pipeline.py
 
-# EXPOSE 5000
+EXPOSE 5000
 
-# CMD ["python", "application.py"]
+CMD ["python", "application.py"]
 
 
 
@@ -120,52 +123,52 @@
 # CMD ["python", "application.py"]
 
 
-FROM python:3.10-slim
+# FROM python:3.10-slim
 
-# Configuration and Environment Variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# # Configuration and Environment Variables
+# ENV PYTHONDONTWRITEBYTECODE=1 \
+#     PYTHONUNBUFFERED=1
 
-# --- ARGUMENTS MUST BE DEFINED EARLY ---
-ARG GCP_PROJECT_ID
-ARG GOOGLE_APPLICATION_CREDENTIALS_PATH 
-# ----------------------------------------
+# # --- ARGUMENTS MUST BE DEFINED EARLY ---
+# ARG GCP_PROJECT_ID
+# ARG GOOGLE_APPLICATION_CREDENTIALS_PATH 
+# # ----------------------------------------
 
-WORKDIR /app
+# WORKDIR /app
 
-# 1. Install System Dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    git \
-    curl \
-    libgomp1 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# # 1. Install System Dependencies
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#     build-essential \
+#     cmake \
+#     git \
+#     curl \
+#     libgomp1 && \
+#     apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
 
-# 2. Copy all local code
-COPY . .
+# # 2. Copy all local code
+# COPY . .
 
-# 3. Install Python dependencies
-RUN pip install --no-cache-dir -e .
+# # 3. Install Python dependencies
+# RUN pip install --no-cache-dir -e .
 
-# --- CRITICAL FIX: EXPLICIT AUTHENTICATION & PATH ---
+# # --- CRITICAL FIX: EXPLICIT AUTHENTICATION & PATH ---
 
-# 4. Set the environment variable expected by the Google auth library (from Jenkins ARG)
-ENV GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS_PATH
+# # 4. Set the environment variable expected by the Google auth library (from Jenkins ARG)
+# ENV GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS_PATH
 
-# 5. Create the artifact directory
-RUN mkdir -p artifacts/raw
+# # 5. Create the artifact directory
+# RUN mkdir -p artifacts/raw
 
-# 6. Download the raw data from GCS using the Python client.
-#    FIX: Explicitly pass the project ID (GCP_PROJECT_ID) to the Client() constructor 
-#    and rely on the GOOGLE_APPLICATION_CREDENTIALS ENV variable.
-RUN python -c "from google.cloud import storage; client = storage.Client(project='$GCP_PROJECT_ID'); bucket = client.bucket('mlops_hotel_reservation_52'); blob = bucket.blob('Hotel_Reservations.csv'); blob.download_to_filename('artifacts/raw/train.csv')"
+# # 6. Download the raw data from GCS using the Python client.
+# #    FIX: Explicitly pass the project ID (GCP_PROJECT_ID) to the Client() constructor 
+# #    and rely on the GOOGLE_APPLICATION_CREDENTIALS ENV variable.
+# RUN python -c "from google.cloud import storage; client = storage.Client(project='$GCP_PROJECT_ID'); bucket = client.bucket('mlops_hotel_reservation_52'); blob = bucket.blob('Hotel_Reservations.csv'); blob.download_to_filename('artifacts/raw/train.csv')"
 
-# 7. Run the full pipeline
-RUN python pipeline/training_pipeline.py
+# # 7. Run the full pipeline
+# RUN python pipeline/training_pipeline.py
 
-EXPOSE 5000
+# EXPOSE 5000
 
-CMD ["python", "application.py"]
+# CMD ["python", "application.py"]

@@ -55,15 +55,13 @@ pipeline{
 
                         gcloud auth configure-docker --quiet
 
-
-                        docker build \
-                            --build-arg GCP_PROJECT_ID=${GCP_PROJECT} \
-                            --build-arg GOOGLE_APPLICATION_CREDENTIALS_PATH=${GOOGLE_APPLICATION_CREDENTIALS} \
-                            -t gcr.io/${GCP_PROJECT}/mlops-project-first:latest .
+                        docker build --secret id=gcp-credentials,src=${GOOGLE_APPLICATION_CREDENTIALS} -t gcr.io/${GCP_PROJECT}/mlops-project-first:latest . 
 
                         
 
                         docker push gcr.io/${GCP_PROJECT}/mlops-project-first:latest
+
+                        echo "Docker image pushed successfully to ${DOCKER_IMAGE}"
 
                         ''' 
                     }
